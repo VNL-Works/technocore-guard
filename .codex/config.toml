@@ -1,0 +1,31 @@
+# Project-local least-privilege defaults. Codex loads project-scoped config only
+# after the project is marked trusted. The launch scripts repeat the critical
+# settings so a missed project layer fails safe rather than broad.
+approval_policy = "on-request"
+approvals_reviewer = "user"
+sandbox_mode = "workspace-write"
+web_search = "disabled"
+allow_login_shell = false
+
+[sandbox_workspace_write]
+network_access = false
+writable_roots = []
+
+[shell_environment_policy]
+inherit = "core"
+ignore_default_excludes = false
+
+[shell_environment_policy.filters]
+"SIGN_SEED" = "exclude"
+"TECHNOCORE_*" = "exclude"
+"FLOP_*" = "exclude"
+"OPENAI_API_KEY" = "exclude"
+"ANTHROPIC_API_KEY" = "exclude"
+"GITHUB_TOKEN" = "exclude"
+"GH_TOKEN" = "exclude"
+"AWS_*" = "exclude"
+"AZURE_*" = "exclude"
+"GOOGLE_*" = "exclude"
+
+[windows]
+sandbox = "elevated"

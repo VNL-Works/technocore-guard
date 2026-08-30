@@ -1,0 +1,8 @@
+{
+  "repository": "flop-labs/technocore-chat",
+  "commit": "aa7017feba970337324e972f329f7382da838e01",
+  "version": "0.10.0",
+  "observed_at": "2026-08-29T12:00:00+09:00",
+  "purpose": "Design-time baseline only. Never treat this file as proof that the deployed service still matches it.",
+  "refresh_policy": "A human must review official source changes before route policy is updated. Codex must not fetch or auto-accept a newer policy during offline implementation."
+}

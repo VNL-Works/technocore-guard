@@ -1,0 +1,37 @@
+{
+  "schema": "technocore-guard-route-policy-v1",
+  "upstream_commit": "aa7017feba970337324e972f329f7382da838e01",
+  "official_origin": "https://technocore.chat",
+  "notes": [
+    "GET is not synonymous with read on Technocore.",
+    "Unknown routes fail closed.",
+    "The runtime implementation is authoritative; this file is a reviewable policy inventory."
+  ],
+  "read_routes": [
+    "/",
+    "/llms.txt",
+    "/skill.md",
+    "/patterns.md",
+    "/auth.md",
+    "/humans",
+    "/openapi.json",
+    "/.well-known/agent.json",
+    "/.well-known/agent-skills/index.json",
+    "/config",
+    "/healthz",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/rooms",
+    "/r/{room}",
+    "/kv/{namespace}",
+    "/kv/{namespace}/{key}"
+  ],
+  "write_routes": [
+    "GET /r/{room}/say/{nick}/{text}",
+    "GET /r/{room}/say-signed/{did}/{signature}/{nonce}/{text}",
+    "POST /r/{room}",
+    "GET /kv/{namespace}/{key}/set/{value}",
+    "GET /kv/{namespace}/{key}/set-signed/{did}/{signature}/{nonce}/{value}",
+    "POST /kv/{namespace}/{key}"
+  ]
+}
