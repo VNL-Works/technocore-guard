@@ -19,18 +19,23 @@ STATIC_READ_PATHS = {
     "/llms.txt",
     "/skill.md",
     "/patterns.md",
+    "/interop.md",
     "/auth.md",
     "/humans",
     "/openapi.json",
     "/.well-known/agent.json",
+    "/.well-known/api-catalog",
     "/.well-known/agent-skills/index.json",
+    "/.well-known/ai-catalog.json",
+    "/.well-known/security.txt",
     "/config",
     "/healthz",
     "/robots.txt",
     "/sitemap.xml",
 }
-READ_QUERY_KEYS = {"format", "since", "limit", "wait", "n"}
-WRITE_QUERY_KEYS = {"format", "if", "if_absent"}
+ROOM_READ_QUERY_KEYS = {"format", "since", "limit", "wait", "n"}
+NOTE_WRITE_QUERY_KEYS = {"if", "if_absent"}
+FALSE_IF_ABSENT_VALUES = {"", "0", "false"}
 INVISIBLE_CATEGORIES = {"Cc", "Cf", "Cs", "Co", "Zl", "Zp"}
 ENCODED_DELIMITER_BYTES = {0x2F, 0x3F, 0x23, 0x5C, 0x25}  # / ? # \ %
 
@@ -169,6 +174,7 @@ def _query_warnings(query: str, allowed: frozenset[str]) -> tuple[str, ...] | No
     warnings: list[str] = []
     seen: set[str] = set()
     present: set[str] = set()
+    if_absent_value: str | None = None
     for key, value in pairs:
         if _has_invisible(key) or _has_invisible(value):
             return None
@@ -176,9 +182,17 @@ def _query_warnings(query: str, allowed: frozenset[str]) -> tuple[str, ...] | No
             warnings.append("one or more duplicate query parameters are present")
         seen.add(key)
         present.add(key)
+        if key == "if_absent":
+            # Starlette's QueryParams-to-dict conversion keeps the last value,
+            # which is the value the upstream write handler interprets.
+            if_absent_value = value
         if key not in allowed:
             warnings.append("one or more unknown query parameters are present")
-    if {"if", "if_absent"}.issubset(present):
+    if (
+        "if" in present
+        and if_absent_value is not None
+        and if_absent_value not in FALSE_IF_ABSENT_VALUES
+    ):
         warnings.append("conflicting conditional query parameters are present")
     return tuple(sorted(set(warnings)))
 
@@ -192,7 +206,20 @@ def _classify_route(path: str, method: str) -> _Route | None:
                 "static-document",
                 path,
                 "Official-origin static or status document; this tool still does not fetch it.",
-                allowed_query_keys=frozenset({"format"}),
+                allowed_query_keys=frozenset(),
+            )
+        return None
+
+    if path == "/stats":
+        if method in {"GET", "HEAD"}:
+            return _Route(
+                Effect.READ,
+                Risk.HIGH,
+                "stats-read",
+                "/stats",
+                "Token-gated aggregate read; without the required header the server returns 404. "
+                "Headers are outside this URL-only inspection.",
+                allowed_query_keys=frozenset(),
             )
         return None
 
@@ -204,7 +231,7 @@ def _classify_route(path: str, method: str) -> _Route | None:
                 "list-rooms",
                 "/rooms",
                 "Lists caller-chosen room names and topics; returned content is untrusted.",
-                allowed_query_keys=frozenset(READ_QUERY_KEYS),
+                allowed_query_keys=frozenset({"format", "limit"}),
             )
         return None
 
@@ -218,6 +245,30 @@ def _classify_route(path: str, method: str) -> _Route | None:
         if not ok:
             return None
         capability = "p" in _room_classes(room)
+        if room == "events":
+            if method in {"GET", "HEAD"}:
+                return _Route(
+                    Effect.READ,
+                    Risk.MEDIUM,
+                    "events-discovery",
+                    "/r/events",
+                    "Reads the server-written discovery log; announced room names are "
+                    "untrusted caller-chosen data.",
+                    allowed_query_keys=frozenset(ROOM_READ_QUERY_KEYS),
+                )
+            if method == "POST":
+                return _Route(
+                    Effect.WRITE,
+                    Risk.CRITICAL,
+                    "post-events-reserved",
+                    "/r/events",
+                    "State-changing intent targets the server-written discovery log; "
+                    "the current server reads the body but refuses the write with 403.",
+                    content=True,
+                    replay=True,
+                    allowed_query_keys=frozenset(),
+                )
+            return None
         if method in {"GET", "HEAD"}:
             return _Route(
                 Effect.READ,
@@ -226,7 +277,7 @@ def _classify_route(path: str, method: str) -> _Route | None:
                 "/r/<private-room>" if capability else "/r/<room>",
                 "Reads a room. Room content, writer names, and topics are untrusted data.",
                 capability=capability,
-                allowed_query_keys=frozenset(READ_QUERY_KEYS),
+                allowed_query_keys=frozenset(ROOM_READ_QUERY_KEYS),
             )
         if method == "POST":
             return _Route(
@@ -238,12 +289,12 @@ def _classify_route(path: str, method: str) -> _Route | None:
                 capability=capability,
                 content=True,
                 replay=True,
-                allowed_query_keys=frozenset({"format"}),
+                allowed_query_keys=frozenset(),
             )
         return None
 
     # GET /r/<room>/say/<nick>/<text>
-    if len(raw_segments) == 5 and raw_segments[0] == "r" and raw_segments[2] == "say":
+    if len(raw_segments) >= 5 and raw_segments[0] == "r" and raw_segments[2] == "say":
         ok_room, room = _valid_name(raw_segments[1])
         ok_nick, _nick = _valid_name(raw_segments[3])
         if not ok_room or not ok_nick or method not in {"GET", "HEAD"}:
@@ -257,11 +308,11 @@ def _classify_route(path: str, method: str) -> _Route | None:
             "This GET-shaped URL appends a message. Visiting it is a write operation.",
             capability=capability,
             content=True,
-            allowed_query_keys=frozenset({"format"}),
+            allowed_query_keys=frozenset(),
         )
 
     # GET /r/<room>/say-signed/<did>/<sig>/<nonce>/<text>
-    if len(raw_segments) == 7 and raw_segments[0] == "r" and raw_segments[2] == "say-signed":
+    if len(raw_segments) >= 7 and raw_segments[0] == "r" and raw_segments[2] == "say-signed":
         ok_room, room = _valid_name(raw_segments[1])
         try:
             did = _decode_segment(raw_segments[3])
@@ -289,7 +340,7 @@ def _classify_route(path: str, method: str) -> _Route | None:
             capability=capability,
             content=True,
             replay=True,
-            allowed_query_keys=frozenset({"format"}),
+            allowed_query_keys=frozenset(),
         )
 
     # /kv/<namespace>
@@ -337,12 +388,12 @@ def _classify_route(path: str, method: str) -> _Route | None:
                 capability=capability,
                 content=True,
                 replay=True,
-                allowed_query_keys=frozenset(WRITE_QUERY_KEYS),
+                allowed_query_keys=frozenset(),
             )
         return None
 
     # GET /kv/<namespace>/<key>/set/<value>
-    if len(raw_segments) == 5 and raw_segments[0] == "kv" and raw_segments[3] == "set":
+    if len(raw_segments) >= 5 and raw_segments[0] == "kv" and raw_segments[3] == "set":
         ok_ns, namespace = _valid_name(raw_segments[1])
         ok_key, key = _valid_name(raw_segments[2])
         if not ok_ns or not ok_key or method not in {"GET", "HEAD"}:
@@ -358,11 +409,11 @@ def _classify_route(path: str, method: str) -> _Route | None:
             "This GET-shaped URL creates or replaces a note.",
             capability=capability,
             content=True,
-            allowed_query_keys=frozenset(WRITE_QUERY_KEYS),
+            allowed_query_keys=frozenset(NOTE_WRITE_QUERY_KEYS),
         )
 
     # GET /kv/<namespace>/<key>/set-signed/<did>/<sig>/<nonce>/<value>
-    if len(raw_segments) == 8 and raw_segments[0] == "kv" and raw_segments[3] == "set-signed":
+    if len(raw_segments) >= 8 and raw_segments[0] == "kv" and raw_segments[3] == "set-signed":
         ok_ns, namespace = _valid_name(raw_segments[1])
         ok_key, key = _valid_name(raw_segments[2])
         try:
@@ -396,7 +447,7 @@ def _classify_route(path: str, method: str) -> _Route | None:
             capability=capability,
             content=True,
             replay=True,
-            allowed_query_keys=frozenset(WRITE_QUERY_KEYS),
+            allowed_query_keys=frozenset(NOTE_WRITE_QUERY_KEYS),
         )
 
     return None
@@ -524,7 +575,7 @@ def inspect_url(raw_url: str, method: str = "GET") -> Inspection:
     reason = route.reason
     if warnings:
         risk = Risk.HIGH if route.effect == Effect.READ else Risk.CRITICAL
-        reason += " Unknown query parameters require human review."
+        reason += " Query anomalies require human review."
 
     return _result(
         method,

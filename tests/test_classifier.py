@@ -27,6 +27,56 @@ class ClassifierTests(unittest.TestCase):
         self.assertEqual(result.risk, Risk.LOW)
         self.assertEqual(result.route_id, "static-document")
 
+    def test_new_static_documents_are_reads_without_query_semantics(self) -> None:
+        paths = (
+            "/interop.md",
+            "/.well-known/api-catalog",
+            "/.well-known/ai-catalog.json",
+            "/.well-known/security.txt",
+        )
+        for path in paths:
+            with self.subTest(path=path):
+                result = self.assert_effect(
+                    "https://technocore.chat" + path,
+                    Effect.READ,
+                )
+                self.assertEqual(result.route_id, "static-document")
+                self.assert_effect(
+                    "https://technocore.chat" + path + "?format=json",
+                    Effect.UNKNOWN,
+                )
+
+    def test_stats_is_dedicated_token_gated_url_read(self) -> None:
+        result = self.assert_effect("https://technocore.chat/stats", Effect.READ)
+        self.assertEqual(result.route_id, "stats-read")
+        self.assertEqual(result.risk, Risk.HIGH)
+        self.assertIn("404", result.reason)
+        self.assertIn("outside this URL-only inspection", result.reason)
+        self.assert_effect("https://technocore.chat/stats?format=json", Effect.UNKNOWN)
+
+    def test_events_discovery_get_and_head_are_dedicated_reads(self) -> None:
+        for method in ("GET", "HEAD"):
+            with self.subTest(method=method):
+                result = self.assert_effect(
+                    "https://technocore.chat/r/events?since=1&wait=0",
+                    Effect.READ,
+                    method=method,
+                )
+                self.assertEqual(result.route_id, "events-discovery")
+                self.assertEqual(result.sanitized_target, "/r/events")
+                self.assertIn("untrusted caller-chosen", result.reason)
+
+    def test_events_post_is_reserved_replay_sensitive_write_intent(self) -> None:
+        result = self.assert_effect(
+            "https://technocore.chat/r/events",
+            Effect.WRITE,
+            method="POST",
+        )
+        self.assertEqual(result.route_id, "post-events-reserved")
+        self.assertTrue(result.contains_user_content)
+        self.assertTrue(result.contains_replay_material)
+        self.assertIn("403", result.reason)
+
     def test_room_read_is_read(self) -> None:
         result = self.assert_effect("https://technocore.chat/r/lobby?since=2&limit=10", Effect.READ)
         self.assertEqual(result.route_id, "read-room")
@@ -48,13 +98,60 @@ class ClassifierTests(unittest.TestCase):
         self.assertEqual(result.sanitized_target, "/kv/<namespace>/<key>/set/<value>")
         self.assertTrue(result.contains_user_content)
 
+    def test_path_converter_write_tails_accept_literal_slashes_and_redact(self) -> None:
+        secret_tail = "secret/second/private-value"
+        examples = (
+            (
+                f"https://technocore.chat/r/lobby/say/example/{secret_tail}",
+                "unsigned-room-write",
+                False,
+            ),
+            (
+                f"https://technocore.chat/r/lobby/say-signed/{DID}/{SIG}/1/{secret_tail}",
+                "signed-room-write",
+                True,
+            ),
+            (
+                f"https://technocore.chat/kv/topic/state/set/{secret_tail}",
+                "unsigned-note-write",
+                False,
+            ),
+            (
+                f"https://technocore.chat/kv/topic/state/set-signed/{DID}/{SIG}/1/{secret_tail}",
+                "signed-note-write",
+                True,
+            ),
+        )
+        for url, route_id, replay in examples:
+            with self.subTest(route_id=route_id):
+                result = self.assert_effect(url, Effect.WRITE)
+                rendered = json.dumps(result.to_public_dict(), sort_keys=True)
+                self.assertEqual(result.route_id, route_id)
+                self.assertEqual(result.risk, Risk.CRITICAL)
+                self.assertEqual(result.contains_replay_material, replay)
+                self.assertNotIn(secret_tail, rendered)
+                self.assertNotIn("private-value", rendered)
+
+    def test_path_converter_tails_do_not_allow_encoded_slashes(self) -> None:
+        urls = (
+            "https://technocore.chat/r/lobby/say/example/hello%2Fworld",
+            f"https://technocore.chat/r/lobby/say-signed/{DID}/{SIG}/1/hello%2Fworld",
+            "https://technocore.chat/kv/topic/state/set/hello%2Fworld",
+            f"https://technocore.chat/kv/topic/state/set-signed/{DID}/{SIG}/1/hello%2Fworld",
+        )
+        for url in urls:
+            with self.subTest(url=url):
+                self.assert_effect(url, Effect.BLOCKED)
+
     def test_post_routes_are_writes_while_gets_are_reads(self) -> None:
         room = "https://technocore.chat/r/lobby"
         note = "https://technocore.chat/kv/topic/lobby"
         self.assert_effect(room, Effect.READ, method="GET")
         self.assert_effect(note, Effect.READ, method="GET")
-        self.assert_effect(room, Effect.WRITE, method="POST")
-        self.assert_effect(note, Effect.WRITE, method="POST")
+        room_post = self.assert_effect(room, Effect.WRITE, method="POST")
+        note_post = self.assert_effect(note, Effect.WRITE, method="POST")
+        self.assertTrue(room_post.contains_replay_material)
+        self.assertTrue(note_post.contains_replay_material)
 
     def test_head_write_shape_is_still_write(self) -> None:
         urls = [
@@ -142,6 +239,52 @@ class ClassifierTests(unittest.TestCase):
         rendered = json.dumps(result.to_public_dict(), sort_keys=True)
         self.assertNotIn("old", rendered)
         self.assertNotIn("again", rendered)
+
+    def test_if_absent_semantics_match_upstream_exactly(self) -> None:
+        base = "https://technocore.chat/kv/topic/lobby/set/x?if=old&if_absent="
+        for value in ("1", "true", "TRUE", "yes", "no", "off", "sometimes"):
+            with self.subTest(truthy=value):
+                result = self.assert_effect(base + value, Effect.WRITE)
+                self.assertIn("conflicting conditional query parameters are present", result.warnings)
+        for value in ("", "0", "false"):
+            with self.subTest(false=value):
+                result = self.assert_effect(base + value, Effect.WRITE)
+                self.assertNotIn("conflicting conditional query parameters are present", result.warnings)
+
+    def test_duplicate_if_absent_uses_last_value_for_conflict_parity(self) -> None:
+        base = "https://technocore.chat/kv/topic/lobby/set/x?if=old"
+        last_false = self.assert_effect(base + "&if_absent=1&if_absent=0", Effect.WRITE)
+        self.assertIn("one or more duplicate query parameters are present", last_false.warnings)
+        self.assertNotIn("conflicting conditional query parameters are present", last_false.warnings)
+
+        last_true = self.assert_effect(base + "&if_absent=0&if_absent=FALSE", Effect.WRITE)
+        self.assertIn("one or more duplicate query parameters are present", last_true.warnings)
+        self.assertIn("conflicting conditional query parameters are present", last_true.warnings)
+
+    def test_duplicate_or_route_specific_query_misuse_makes_reads_unknown(self) -> None:
+        urls = (
+            "https://technocore.chat/rooms?since=1",
+            "https://technocore.chat/rooms?limit=1&limit=2",
+            "https://technocore.chat/r/lobby?since=1&since=2",
+            "https://technocore.chat/kv/topic?limit=1",
+            "https://technocore.chat/kv/topic/key?since=1",
+        )
+        for url in urls:
+            with self.subTest(url=url):
+                self.assert_effect(url, Effect.UNKNOWN)
+
+    def test_query_anomalies_never_downgrade_known_writes(self) -> None:
+        examples = (
+            ("GET", "https://technocore.chat/r/lobby/say/bot/x?format=json&format=text"),
+            ("POST", "https://technocore.chat/r/lobby?since=1&since=2"),
+            ("POST", "https://technocore.chat/r/events?format=json"),
+            ("GET", "https://technocore.chat/kv/topic/key/set/x?unknown=1"),
+            ("POST", "https://technocore.chat/kv/topic/key?if_absent=maybe"),
+        )
+        for method, url in examples:
+            with self.subTest(method=method, url=url):
+                result = self.assert_effect(url, Effect.WRITE, method=method)
+                self.assertEqual(result.risk, Risk.CRITICAL)
 
     def test_unknown_query_name_is_not_echoed(self) -> None:
         query_name = "secret-action-parameter"

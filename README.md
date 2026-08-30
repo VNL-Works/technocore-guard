@@ -4,9 +4,9 @@
 
 Technocore URLs can be capabilities, not ordinary links. Technocore exposes some write operations through HTTP `GET` paths. An AI agent that merely “checks” an untrusted URL can therefore append a public message or replace a note. Technocore Capability Guard classifies the likely effect **without opening the URL**.
 
-Technocore Capability Guard v0.1.0 exposes only the `inspect` and `verify-ledger` commands. Neither command opens a URL, resolves a host, or sends a request. The Python package remains `technocore_guard`, and the installed CLI remains `tc-guard`.
+Technocore Capability Guard v0.2.0 exposes only the `inspect` and `verify-ledger` commands. Neither command opens a URL, resolves a host, or sends a request. The Python package remains `technocore_guard`, and the installed CLI remains `tc-guard`.
 
-## What v0.1.0 does
+## What v0.2.0 does
 
 - distinguishes reviewed read routes from GET-shaped and POST-shaped writes;
 - rejects non-official or noncanonical-case authorities, userinfo tricks, ports, even empty fragments, raw whitespace, encoded controls/routing delimiters, double encoding, and dot segments;
@@ -17,6 +17,19 @@ Technocore Capability Guard v0.1.0 exposes only the `inspect` and `verify-ledger
 - rejects malformed, duplicate-key, schema-expanded, credential-path, symlink, junction, and other reparse-point ledger data before append;
 - uses only the Python standard library;
 - performs no network, DNS, signing, wallet, Faucet, or token operation.
+
+The v2 route policy follows reviewed upstream commit
+`7707cb63ebf638e8ef0cf59d1364818b9fef7d24` (upstream version `0.10.0`). It
+separates token-gated `/stats`, server-written `GET`/`HEAD /r/events`, and the
+reserved `POST /r/events` write intent from generic routes. Static documents
+accept no query keys; `/rooms`, room reads, note reads, and conditional writes
+each have explicit route-specific query allowlists.
+
+Encoded slash and encoded percent remain blocked even where an upstream
+`path` converter might accept the decoded character. This is a deliberate
+fail-closed parser-differential boundary: it may reject a URL the server would
+handle, but avoids guessing when intermediaries and application routing can
+disagree.
 
 ## Relationship to other tools
 
@@ -84,7 +97,7 @@ The raw URL is not represented at all—not even by a deterministic public hash.
 
 ### Ledger security boundary
 
-The ledger is tamper-evident, not tamper-proof. Verification detects changes within the presented chain, but a trusted external checkpoint is needed to detect removal of the tail or replacement with an entirely recomputed chain. Concurrent writers are outside the v0.1.0 scope; serialize writes in a single process.
+The ledger is tamper-evident, not tamper-proof. Verification detects changes within the presented chain, but a trusted external checkpoint is needed to detect removal of the tail or replacement with an entirely recomputed chain. Concurrent writers are outside the v0.2.0 scope; serialize writes in a single process.
 
 ### Frozen policy and version metadata
 
@@ -100,7 +113,7 @@ The upstream baseline is a human-reviewed fixed snapshot; this tool never update
 4. Paste the contents of `CODEX_IMPLEMENTATION_PROMPT.md`.
 5. Review the diff and validation report before committing anything.
 
-Codex's local sandbox and approval policy are a second line of defense. The first line is architectural: v0.1.0 has no runtime code path that can send a request.
+Codex's local sandbox and approval policy are a second line of defense. The first line is architectural: v0.2.0 has no runtime code path that can send a request.
 
 ## Contribution evidence
 
@@ -111,7 +124,7 @@ After a release is reviewed:
 ```powershell
 python scripts/build_release_manifest.py
 python scripts/render_release_anchor.py `
-  --version 0.1.0 `
+  --version 0.2.0 `
   --repository "https://github.com/OWNER/technocore-guard"
 ```
 

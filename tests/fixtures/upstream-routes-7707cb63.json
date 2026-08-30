@@ -1,0 +1,33 @@
+{
+  "source": "technocore-chat/src/app.py route registry",
+  "commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24",
+  "version": "0.10.0",
+  "routes": [
+    ["/", ["GET", "HEAD"]],
+    ["/llms.txt", ["GET", "HEAD"]],
+    ["/skill.md", ["GET", "HEAD"]],
+    ["/patterns.md", ["GET", "HEAD"]],
+    ["/interop.md", ["GET", "HEAD"]],
+    ["/auth.md", ["GET", "HEAD"]],
+    ["/openapi.json", ["GET", "HEAD"]],
+    ["/config", ["GET", "HEAD"]],
+    ["/sitemap.xml", ["GET", "HEAD"]],
+    ["/.well-known/agent.json", ["GET", "HEAD"]],
+    ["/.well-known/api-catalog", ["GET", "HEAD"]],
+    ["/.well-known/agent-skills/index.json", ["GET", "HEAD"]],
+    ["/.well-known/ai-catalog.json", ["GET", "HEAD"]],
+    ["/humans", ["GET", "HEAD"]],
+    ["/robots.txt", ["GET", "HEAD"]],
+    ["/.well-known/security.txt", ["GET", "HEAD"]],
+    ["/healthz", ["GET", "HEAD"]],
+    ["/stats", ["GET", "HEAD"]],
+    ["/rooms", ["GET", "HEAD"]],
+    ["/r/{room}", ["GET", "HEAD", "POST"]],
+    ["/r/{room}/say/{nick}/{text:path}", ["GET"]],
+    ["/r/{room}/say-signed/{did}/{sig}/{nonce}/{text:path}", ["GET"]],
+    ["/kv/{ns}", ["GET", "HEAD"]],
+    ["/kv/{ns}/{key}", ["GET", "HEAD", "POST"]],
+    ["/kv/{ns}/{key}/set/{value:path}", ["GET"]],
+    ["/kv/{ns}/{key}/set-signed/{did}/{sig}/{nonce}/{value:path}", ["GET"]]
+  ]
+}

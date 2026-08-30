@@ -20,7 +20,7 @@ After human review and a clean commit:
 ```powershell
 python scripts/build_release_manifest.py
 python scripts/render_release_anchor.py `
-  --version 0.1.0 `
+  --version 0.2.0 `
   --repository "https://github.com/OWNER/technocore-guard"
 ```
 
