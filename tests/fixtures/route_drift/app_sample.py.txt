@@ -1,0 +1,46 @@
+"""Synthetic upstream app.py for tests/test_route_drift.py.
+
+This file is parsed with ast only. It is never imported or executed, which is
+why it carries a .txt suffix. Each route element is labelled with the
+requirement 2 form it exercises and the guard verdict the tests expect.
+"""
+
+from starlette.applications import Starlette
+from starlette.routing import Route
+
+_DOCS = {
+    "/skill.md": "synthetic skill text",
+    "/interop.md": "synthetic interop text",
+}
+
+
+def _get_write(path, endpoint):
+    route = Route(path, endpoint)
+    route.methods = {"GET"}
+    return route
+
+
+app = Starlette(
+    routes=[
+        # (d) literal tuple comprehension: covered static documents.
+        *[Route(path, llms_txt) for path in ("/", "/llms.txt")],
+        # (e) _DOCS comprehension: /skill.md covered, /interop.md uncovered.
+        *[Route(path, doc_md) for path in _DOCS],
+        # (a) covered static document.
+        Route("/healthz", healthz),
+        # (a) uncovered static document.
+        Route("/stats", stats),
+        Route("/rooms", rooms),
+        Route("/r/{room}", room_read),
+        # (b) merged with the GET entry above.
+        Route("/r/{room}", room_post, methods=["POST"]),
+        # (a) uncovered parameterised read.
+        Route("/r/{room}/export", room_export),
+        # (b) POST that the guard does not call a write.
+        Route("/r/{room}/archive", room_archive, methods=["POST"]),
+        # (c) GET-shaped write that the guard covers.
+        _get_write("/r/{room}/say/{nick}/{text:path}", room_say),
+        # (c) GET-shaped write that the guard does not call a write.
+        _get_write("/r/{room}/poke/{nick}", room_poke),
+    ],
+)
