@@ -2,10 +2,11 @@
   "schema": "technocore-guard-route-policy-v1",
   "upstream_commit": "aa7017feba970337324e972f329f7382da838e01",
   "official_origin": "https://technocore.chat",
+  "status": "Historical v0.1.0 inventory only; runtime and tests use routes-v2.json.",
   "notes": [
     "GET is not synonymous with read on Technocore.",
     "Unknown routes fail closed.",
-    "The runtime implementation is authoritative; this file is a reviewable policy inventory."
+    "This file is retained only to document the v0.1.0 review baseline."
   ],
   "read_routes": [
     "/",

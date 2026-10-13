@@ -163,7 +163,7 @@ class ProjectSafetyTests(unittest.TestCase):
         changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
         for statement in (
             "# Technocore Capability Guard",
-            "Technocore Capability Guard v0.1.0",
+            "Technocore Capability Guard v0.2.0",
             "Offline, fail-closed effect classifier and tamper-evident local ledger",
             "This project is neither a fork nor a replacement for Technocore Link Guard",
             "not an official Technocore tool",
@@ -173,7 +173,7 @@ class ProjectSafetyTests(unittest.TestCase):
             "`[project].version` in `pyproject.toml` is authoritative",
             "tamper-evident, not tamper-proof",
             "trusted external checkpoint",
-            "Concurrent writers are outside the v0.1.0 scope",
+            "Concurrent writers are outside the v0.2.0 scope",
             "human-reviewed fixed snapshot",
             "never updates it automatically",
             "`inspect` and `verify-ledger`",
@@ -184,7 +184,7 @@ class ProjectSafetyTests(unittest.TestCase):
             "https://github.com/devorun/technocore-link-guard",
             readme,
         )
-        self.assertIn("## 0.1.0", changelog)
+        self.assertIn("## 0.2.0", changelog)
         self.assertNotIn("http://", changelog)
         self.assertNotIn("https://", changelog)
 

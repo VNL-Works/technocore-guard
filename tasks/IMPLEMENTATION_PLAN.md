@@ -36,7 +36,7 @@ Keep only `inspect` and `verify-ledger`. Improve help and exit behavior only. Ne
 
 **Status:** FUTURE
 
-Requires a separate domain-restricted process and human policy review. Do not implement in v0.1.0.
+Requires a separate domain-restricted process and human policy review. Do not implement in v0.2.0.
 
 ## TG-102 — Safe read executor
 

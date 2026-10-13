@@ -39,7 +39,7 @@ _SCHEMA = "technocore-guard-inspection-v1"
 _OFFICIAL_ORIGIN = "https://technocore.chat"
 _SUPPORTED_METHODS = frozenset({"GET", "HEAD", "POST"})
 _PUBLIC_METHODS = _SUPPORTED_METHODS | {"<unsupported>"}
-_QUERY_REVIEW_SUFFIX = " Unknown query parameters require human review."
+_QUERY_REVIEW_SUFFIX = " Query anomalies require human review."
 _WARNING_VALUES = frozenset(
     {
         "one or more duplicate query parameters are present",
@@ -54,11 +54,15 @@ _STATIC_TARGETS = frozenset(
         "/llms.txt",
         "/skill.md",
         "/patterns.md",
+        "/interop.md",
         "/auth.md",
         "/humans",
         "/openapi.json",
         "/.well-known/agent.json",
+        "/.well-known/api-catalog",
         "/.well-known/agent-skills/index.json",
+        "/.well-known/ai-catalog.json",
+        "/.well-known/security.txt",
         "/config",
         "/healthz",
         "/robots.txt",
@@ -68,8 +72,12 @@ _STATIC_TARGETS = frozenset(
 
 _ROUTE_TARGETS: dict[str, frozenset[str]] = {
     "static-document": _STATIC_TARGETS,
+    "stats-read": frozenset({"/stats"}),
+    "events-discovery": frozenset({"/r/events"}),
+    "post-events-reserved": frozenset({"/r/events"}),
     "list-rooms": frozenset({"/rooms"}),
     "read-room": frozenset({"/r/<room>", "/r/<private-room>"}),
+    "export-room": frozenset({"/r/<room>/export", "/r/<private-room>/export"}),
     "post-room": frozenset({"/r/<room>", "/r/<private-room>"}),
     "unsigned-room-write": frozenset(
         {"/r/<room>/say/<nick>/<text>", "/r/<private-room>/say/<nick>/<text>"}
@@ -158,11 +166,32 @@ _ROUTE_REASONS: dict[str, frozenset[str]] = {
     "static-document": frozenset(
         {"Official-origin static or status document; this tool still does not fetch it."}
     ),
+    "stats-read": frozenset(
+        {
+            "Token-gated aggregate read; without the required header the server returns 404. "
+            "Headers are outside this URL-only inspection."
+        }
+    ),
+    "events-discovery": frozenset(
+        {
+            "Reads the server-written discovery log; announced room names are "
+            "untrusted caller-chosen data."
+        }
+    ),
+    "post-events-reserved": frozenset(
+        {
+            "State-changing intent targets the server-written discovery log; "
+            "the current server reads the body but refuses the write with 403."
+        }
+    ),
     "list-rooms": frozenset(
         {"Lists caller-chosen room names and topics; returned content is untrusted."}
     ),
     "read-room": frozenset(
         {"Reads a room. Room content, writer names, and topics are untrusted data."}
+    ),
+    "export-room": frozenset(
+        {"Exports retained room history; room names and records are untrusted data."}
     ),
     "post-room": frozenset(
         {"POST to a room may append public or capability-scoped content."}
@@ -195,11 +224,21 @@ _ROUTE_REASONS: dict[str, frozenset[str]] = {
 _ROUTE_REASONS.update(_BLOCKED_REASONS)
 
 _READ_ROUTE_IDS = frozenset(
-    {"static-document", "list-rooms", "read-room", "list-notes", "read-note"}
+    {
+        "static-document",
+        "stats-read",
+        "events-discovery",
+        "list-rooms",
+        "read-room",
+        "export-room",
+        "list-notes",
+        "read-note",
+    }
 )
 _WRITE_ROUTE_IDS = frozenset(
     {
         "post-room",
+        "post-events-reserved",
         "unsigned-room-write",
         "signed-room-write",
         "post-note",
@@ -207,7 +246,7 @@ _WRITE_ROUTE_IDS = frozenset(
         "signed-note-write",
     }
 )
-_POST_ROUTE_IDS = frozenset({"post-room", "post-note"})
+_POST_ROUTE_IDS = frozenset({"post-room", "post-events-reserved", "post-note"})
 _SIGNED_ROUTE_IDS = frozenset({"signed-room-write", "signed-note-write"})
 _BLOCKED_ROUTE_IDS = frozenset(_BLOCKED_REASONS)
 
@@ -301,6 +340,8 @@ def validate_public_event(event: Mapping[str, Any]) -> None:
             expected_risk = Risk.HIGH.value
         elif route_id == "static-document":
             expected_risk = Risk.LOW.value
+        elif route_id == "stats-read":
+            expected_risk = Risk.HIGH.value
         elif expected_capability:
             expected_risk = Risk.HIGH.value
         else:

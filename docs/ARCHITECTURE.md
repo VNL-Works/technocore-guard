@@ -7,7 +7,9 @@ Pure function from `(raw_url, method)` to `Inspection`:
 1. reject unsupported methods and invisible/raw ambiguity;
 2. parse absolute URL;
 3. enforce lowercase `https://` and the exact canonical authority spelling;
-4. reject encoded controls and routing delimiters;
+4. reject encoded controls and routing delimiters, including encoded slash and percent,
+   as a deliberate fail-closed boundary even where an upstream path converter may accept
+   them; this accepts false positives rather than parser-confusion risk;
 5. reject decoded invisible characters, second-pass decoding changes, and dot segments;
 6. match the reviewed route shape;
 7. review query keys without echoing unknown names or values; warnings on a
@@ -25,7 +27,7 @@ data. Caller-constructed free text is not serialisable through this boundary.
 
 ## `ledger.py`
 
-Optional local JSONL chain. Every record contains a sequential number, previous-record hash, hash of the redacted event, and record hash over canonical JSON. It never receives the raw URL or a deterministic hash of it. Appends rewrite through an atomic temporary file. Concurrent writers are out of scope for v0.1.0.
+Optional local JSONL chain. Every record contains a sequential number, previous-record hash, hash of the redacted event, and record hash over canonical JSON. It never receives the raw URL or a deterministic hash of it. Appends rewrite through an atomic temporary file. Concurrent writers are out of scope for v0.2.0. The public event schema deliberately remains `technocore-guard-inspection-v1`, so existing ledgers remain verifiable.
 
 Verification rejects duplicate JSON keys, non-finite JSON values, extra record/event
 fields, non-canonical timestamps, malformed hashes, and non-integer sequences. A
@@ -48,8 +50,13 @@ input mode accepts exactly one line and is bounded before classification.
 
 ## Why this is not a proxy
 
-A proxy must accept an untrusted destination and then make a request. Even an allowlisted proxy creates redirect, DNS, response-injection, credential, timeout, and method-confusion surfaces. v0.1.0 produces a decision artifact only.
+A proxy must accept an untrusted destination and then make a request. Even an allowlisted proxy creates redirect, DNS, response-injection, credential, timeout, and method-confusion surfaces. v0.2.0 produces a decision artifact only.
 
 ## Policy updates
 
-`UPSTREAM_BASELINE.json` pins the reviewed source revision and does not auto-update. A human must retrieve and review official changes, update baseline and route inventory together, and add tests before behavior broadens.
+`UPSTREAM_BASELINE.json` pins the reviewed source revision and does not auto-update. Policy
+v2 records each route ID, path template, method, effect, allowed query keys, and conditional
+or reserved semantics. `/stats` is a URL-level read whose token header is outside this
+classifier's scope; `/r/events` has distinct server-written read and refused write entries.
+A human must retrieve and review official changes, update the baseline, offline route
+fixture, and route inventory together, and add tests before behavior broadens.

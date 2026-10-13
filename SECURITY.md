@@ -2,7 +2,7 @@
 
 ## Supported scope
 
-The v0.1.0 security boundary is intentionally narrow: parse an untrusted URL string offline, classify its reviewed route and HTTP effect, redact sensitive components, and optionally append the redacted event to a local integrity chain.
+The v0.2.0 security boundary is intentionally narrow: parse an untrusted URL string offline, classify its reviewed route and HTTP effect, redact sensitive components, and optionally append the redacted event to a local integrity chain.
 
 ## Never include these in a public report
 

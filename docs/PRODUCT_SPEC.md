@@ -1,4 +1,4 @@
-# Product specification — v0.1.0 offline core
+# Product specification — v0.2.0 offline core
 
 ## Problem
 
@@ -36,7 +36,7 @@ The raw URL and its deterministic hash are absent by contract.
 
 `unknown` and `blocked` return a non-zero CLI status.
 
-## v0.1.0 acceptance criteria
+## v0.2.0 acceptance criteria
 
 - standard-library-only runtime;
 - zero network paths;
