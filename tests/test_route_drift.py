@@ -144,6 +144,77 @@ class RouteDriftTests(unittest.TestCase):
     def test_unknown_placeholder_is_a_sample_error(self) -> None:
         self.assert_exit_2('app = Starlette(routes=[Route("/u/{user}", x)])\n', "unknown placeholder")
 
+    def test_non_literal_item_in_literal_tuple_exits_2(self) -> None:
+        source = (
+            'P = "/llms.txt"\n'
+            "app = Starlette(\n"
+            "    routes=[\n"
+            '        *[Route(path, llms_txt) for path in ("/healthz", P)],\n'
+            "    ],\n"
+            ")\n"
+        )
+        err = self.assert_exit_2(source, "non-literal path")
+        self.assertIn("line 4", err)
+
+    def test_methods_not_a_list_literal_exits_2(self) -> None:
+        cases = (
+            'app = Starlette(routes=[Route("/r/{room}", room_post, methods=("POST",))])\n',
+            'M = ["POST"]\napp = Starlette(routes=[Route("/r/{room}", room_post, methods=M)])\n',
+        )
+        for index, source in enumerate(cases):
+            with self.subTest(index=index):
+                err = self.assert_exit_2(source, "unknown route shape")
+                self.assertIn("`methods=` is not a non-empty list literal", err)
+
+    def test_app_rebound_later_exits_2(self) -> None:
+        cases = (
+            (
+                'app = Starlette(routes=[Route("/healthz", healthz)])\nif X:\n    app = other\n',
+                "line 3: ambiguous app: `app` is rebound outside the module-level assignment",
+            ),
+            (
+                'app = Starlette(routes=[Route("/healthz", healthz)])\napp = wrap(app)\n',
+                "line 2: ambiguous app: more than one module-level `app` assignment",
+            ),
+        )
+        for index, (source, message) in enumerate(cases):
+            with self.subTest(index=index):
+                self.assert_exit_2(source, message)
+
+    def test_docs_mutation_exits_2(self) -> None:
+        cases = (
+            '_DOCS = {"/skill.md": "x"}\n_DOCS.update({"/extra.md": "y"})\n',
+            '_DOCS = {"/skill.md": "x"}\n_DOCS.setdefault("/extra.md", "y")\n',
+            '_DOCS = {"/skill.md": "x"}\n_DOCS["/extra.md"] = "y"\n',
+        )
+        tail = "app = Starlette(routes=[*[Route(path, doc_md) for path in _DOCS]])\n"
+        for index, source in enumerate(cases):
+            with self.subTest(index=index):
+                err = self.assert_exit_2(source + tail, "ambiguous _DOCS")
+                self.assertIn("line 2", err)
+
+    def test_unreadable_input_exits_2_with_single_prefix(self) -> None:
+        with project_temp_dir() as directory:
+            code, out, err = self.run_main(
+                ["--app-py", str(directory / "missing.py"), "--upstream-commit", COMMIT]
+            )
+        self.assertEqual(code, 2)
+        self.assertEqual(out, "")
+        self.assertEqual(err, "route_drift: error: input: read error: cannot read --app-py (FileNotFoundError)\n")
+
+    def test_unwritable_output_exits_2_without_traceback(self) -> None:
+        for option in ("--out", "--fixture-out"):
+            with self.subTest(option=option), project_temp_dir() as directory:
+                target = directory / "missing-dir" / "out.json"
+                argv = ["--app-py", str(SAMPLE), "--upstream-commit", COMMIT, option, str(target)]
+                if option == "--fixture-out":
+                    argv += ["--out", str(directory / "report.json")]
+                code, out, err = self.run_main(argv)
+                self.assertEqual(code, 2)
+                self.assertEqual(out, "")
+                self.assertEqual(err, f"route_drift: error: cannot write {option} (FileNotFoundError)\n")
+                self.assertFalse(target.exists())
+
     def test_sample_refused_by_the_guard_is_sample_rejected(self) -> None:
         err = self.assert_exit_2('app = Starlette(routes=[Route("/a b", x)])\n', "sample_rejected")
         self.assertIn("raw-whitespace", err)

@@ -24,23 +24,27 @@ python scripts/route_drift.py --app-py <scratch>/app-<commit>.py --upstream-comm
 - `--upstream-commit` is recorded as given and must match `^[0-9a-f]{40}$`. The script
   cannot check that the file really came from that commit.
 - Without `--out` the report goes to stdout.
-- `--fixture-out` also writes `{"source", "commit", "routes": [[path, [methods]], ...]}`,
-  the layout of `tests/fixtures/upstream-routes-*.json`. The script only writes the paths
-  you pass.
+- `--fixture-out` also writes `{"source", "commit", "routes": [[path, [methods]], ...]}`.
+  This follows PR #1's `upstream-routes-*.json` layout but has no `version` key, and its
+  rows are sorted by path rather than in registration order. Only the paths you pass are written.
 - `--guard-src` classifies with another checkout's `src` directory instead of this one.
-- Exit codes: `0` no drift, `1` drift, `2` usage, extraction or sample error.
+- Exit codes: `0` no drift, `1` drift, `2` usage, read, write, extraction or sample error.
 
 The parser understands exactly five element shapes inside the module-level
 `app = Starlette(routes=[...])`: `Route("<path>", name)`, `Route("<path>", name, methods=[...])`,
 `_get_write("<path>", name)`, and `*[Route(path, name) for path in (<literal tuple>)]` or
-`... for path in _DOCS` with literal dict keys. Anything else (a new shape, a non-literal path,
-routes registered outside the list) exits `2` naming the line. Treat that as a signal to review
-upstream by hand, not as something to work around.
+`... for path in _DOCS` with literal dict keys. Anything else (a new shape, a non-literal path)
+exits `2` naming the line. Treat that as a signal to review upstream by hand, not as something
+to work around. Registration outside the list is detected by name only: `app.<method>` such as
+`app.add_route`, and rebinding or mutating `app` or `_DOCS`. Aliases and `getattr` are not
+followed, and `Route` and `_get_write` are trusted by name.
 
 ## What the report lists
 
 Each route and method is classified by `inspect_url` against a sample URL built from fixed
 placeholder values. Only path templates appear in the report, never sample URLs or values.
+A sample the guard returns as `blocked` exits `2` (`sample_rejected`). A sample its validators
+refuse comes back as effect `unknown` and is listed as `uncovered`, the safe direction.
 
 - `upstream_routes`: every registered path with its merged methods. HEAD is added wherever
   Starlette adds it; `_get_write` routes are GET only.
@@ -49,6 +53,7 @@ placeholder values. Only path templates appear in the report, never sample URLs 
   reviewed them.
 - `write_misclassified`: `_get_write` routes and POST methods whose effect is not `write`.
   These are the dangerous cases: upstream mutates state but the guard does not call it a write.
+  It knows only those two signals. A plain `Route` whose handler writes is invisible to it.
 - `stale_static_paths`: `STATIC_READ_PATHS` entries that upstream no longer registers.
 - `drift`: true when any of the three lists above is non-empty.
 

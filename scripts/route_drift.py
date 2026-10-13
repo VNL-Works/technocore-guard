@@ -439,7 +439,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         try:
             source = args.app_py.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError) as exc:
-            raise DriftError(None, "input", f"cannot read --app-py ({type(exc).__name__})") from None
+            raise DriftError(None, "read error", f"cannot read --app-py ({type(exc).__name__})") from None
         entries = extract_routes(source)
         classifier = _load_classifier(args.guard_src)
         report = build_report(entries, args.upstream_commit, classifier)
@@ -448,12 +448,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     text = render_report(report)
-    if args.out is not None:
-        _write_text(args.out, text)
-    else:
+    for option, destination, content in (
+        ("--out", args.out, text),
+        ("--fixture-out", args.fixture_out, render_fixture(report)),
+    ):
+        if destination is None:
+            continue
+        try:
+            _write_text(destination, content)
+        except OSError as exc:
+            print(f"route_drift: error: cannot write {option} ({type(exc).__name__})", file=sys.stderr)
+            return 2
+    if args.out is None:
         _write_stdout(text)
-    if args.fixture_out is not None:
-        _write_text(args.fixture_out, render_fixture(report))
     return 1 if report["drift"] else 0
 
 
