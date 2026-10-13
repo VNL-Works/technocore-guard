@@ -23,6 +23,7 @@
     ["/stats", ["GET", "HEAD"]],
     ["/rooms", ["GET", "HEAD"]],
     ["/r/{room}", ["GET", "HEAD", "POST"]],
+    ["/r/{room}/export", ["GET", "HEAD"]],
     ["/r/{room}/say/{nick}/{text:path}", ["GET"]],
     ["/r/{room}/say-signed/{did}/{sig}/{nonce}/{text:path}", ["GET"]],
     ["/kv/{ns}", ["GET", "HEAD"]],

@@ -77,6 +77,7 @@ _ROUTE_TARGETS: dict[str, frozenset[str]] = {
     "post-events-reserved": frozenset({"/r/events"}),
     "list-rooms": frozenset({"/rooms"}),
     "read-room": frozenset({"/r/<room>", "/r/<private-room>"}),
+    "export-room": frozenset({"/r/<room>/export", "/r/<private-room>/export"}),
     "post-room": frozenset({"/r/<room>", "/r/<private-room>"}),
     "unsigned-room-write": frozenset(
         {"/r/<room>/say/<nick>/<text>", "/r/<private-room>/say/<nick>/<text>"}
@@ -189,6 +190,9 @@ _ROUTE_REASONS: dict[str, frozenset[str]] = {
     "read-room": frozenset(
         {"Reads a room. Room content, writer names, and topics are untrusted data."}
     ),
+    "export-room": frozenset(
+        {"Exports retained room history; room names and records are untrusted data."}
+    ),
     "post-room": frozenset(
         {"POST to a room may append public or capability-scoped content."}
     ),
@@ -226,6 +230,7 @@ _READ_ROUTE_IDS = frozenset(
         "events-discovery",
         "list-rooms",
         "read-room",
+        "export-room",
         "list-notes",
         "read-note",
     }

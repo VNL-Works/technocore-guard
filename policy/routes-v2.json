@@ -238,12 +238,22 @@
       "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
     },
     {
+      "route_id": "export-room",
+      "path_template": "/r/{room}/export",
+      "sanitized_targets": ["/r/<room>/export", "/r/<private-room>/export"],
+      "methods": ["GET", "HEAD"],
+      "effect": "read",
+      "allowed_query_keys": [],
+      "semantics": "exports retained room history; caller-chosen room names and records are untrusted; p- room capabilities are redacted",
+      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+    },
+    {
       "route_id": "post-room",
       "path_template": "/r/{room}",
       "sanitized_targets": ["/r/<room>", "/r/<private-room>"],
       "methods": ["POST"],
       "effect": "write",
-      "allowed_query_keys": [],
+      "allowed_query_keys": ["format"],
       "semantics": "body-dependent signed or unsigned write; replay-sensitive semantics cannot be inferred from URL",
       "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
     },
@@ -253,7 +263,7 @@
       "sanitized_targets": ["/r/<room>/say/<nick>/<text>", "/r/<private-room>/say/<nick>/<text>"],
       "methods": ["GET", "HEAD"],
       "effect": "write",
-      "allowed_query_keys": [],
+      "allowed_query_keys": ["format"],
       "semantics": "GET-shaped state mutation; HEAD is conservatively classified as write although upstream refuses it",
       "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
     },
@@ -263,7 +273,7 @@
       "sanitized_targets": ["/r/<room>/say-signed/<did>/<signature>/<nonce>/<text>", "/r/<private-room>/say-signed/<did>/<signature>/<nonce>/<text>"],
       "methods": ["GET", "HEAD"],
       "effect": "write",
-      "allowed_query_keys": [],
+      "allowed_query_keys": ["format"],
       "semantics": "GET-shaped mutation containing replay-sensitive signed material; HEAD remains fail-closed write",
       "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
     },
@@ -293,7 +303,7 @@
       "sanitized_targets": ["/kv/<namespace>/<key>", "/kv/<private-namespace>/<key>", "/kv/<namespace>/<private-key>", "/kv/<private-namespace>/<private-key>"],
       "methods": ["POST"],
       "effect": "write",
-      "allowed_query_keys": [],
+      "allowed_query_keys": ["format"],
       "semantics": "body-dependent signed, unsigned, and conditional write; replay-sensitive semantics cannot be inferred from URL",
       "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
     },
@@ -303,7 +313,7 @@
       "sanitized_targets": ["/kv/<namespace>/<key>/set/<value>", "/kv/<private-namespace>/<key>/set/<value>", "/kv/<namespace>/<private-key>/set/<value>", "/kv/<private-namespace>/<private-key>/set/<value>"],
       "methods": ["GET", "HEAD"],
       "effect": "write",
-      "allowed_query_keys": ["if", "if_absent"],
+      "allowed_query_keys": ["format", "if", "if_absent"],
       "semantics": "GET-shaped conditional mutation; reserved namespaces can refuse it and HEAD remains fail-closed write",
       "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
     },
@@ -313,7 +323,7 @@
       "sanitized_targets": ["/kv/<namespace>/<key>/set-signed/<did>/<signature>/<nonce>/<value>", "/kv/<private-namespace>/<key>/set-signed/<did>/<signature>/<nonce>/<value>", "/kv/<namespace>/<private-key>/set-signed/<did>/<signature>/<nonce>/<value>", "/kv/<private-namespace>/<private-key>/set-signed/<did>/<signature>/<nonce>/<value>"],
       "methods": ["GET", "HEAD"],
       "effect": "write",
-      "allowed_query_keys": ["if", "if_absent"],
+      "allowed_query_keys": ["format", "if", "if_absent"],
       "semantics": "reserved ownership write containing replay-sensitive signed material; HEAD remains fail-closed write",
       "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
     }

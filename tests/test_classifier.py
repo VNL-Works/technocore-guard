@@ -143,6 +143,40 @@ class ClassifierTests(unittest.TestCase):
             with self.subTest(url=url):
                 self.assert_effect(url, Effect.BLOCKED)
 
+    def test_room_export_is_read_and_redacts_private_capabilities(self) -> None:
+        examples = (
+            ("lobby", "/r/<room>/export", Risk.MEDIUM, False),
+            ("p-lobby", "/r/<private-room>/export", Risk.HIGH, True),
+        )
+        for room, target, risk, capability in examples:
+            for method in ("GET", "HEAD"):
+                with self.subTest(room=room, method=method):
+                    result = self.assert_effect(
+                        f"https://technocore.chat/r/{room}/export",
+                        Effect.READ,
+                        method=method,
+                    )
+                    self.assertEqual(result.route_id, "export-room")
+                    self.assertEqual(result.sanitized_target, target)
+                    self.assertEqual(result.risk, risk)
+                    self.assertEqual(result.contains_private_capability, capability)
+        self.assert_effect("https://technocore.chat/r/lobby/export?limit=1", Effect.UNKNOWN)
+
+    def test_format_query_is_allowed_on_write_responses(self) -> None:
+        examples = (
+            ("GET", "https://technocore.chat/r/lobby/say/bot/hello?format=json"),
+            ("GET", f"https://technocore.chat/r/lobby/say-signed/{DID}/{SIG}/1/hello?format=json"),
+            ("POST", "https://technocore.chat/r/lobby?format=json"),
+            ("POST", "https://technocore.chat/kv/topic/state?format=json"),
+            ("GET", "https://technocore.chat/kv/topic/state/set/hello?format=json&if=old&if_absent=false"),
+            ("GET", f"https://technocore.chat/kv/topic/state/set-signed/{DID}/{SIG}/1/hello?format=json&if=old&if_absent=false"),
+        )
+        for method, url in examples:
+            with self.subTest(method=method, url=url):
+                result = self.assert_effect(url, Effect.WRITE, method=method)
+                self.assertEqual(result.risk, Risk.CRITICAL)
+                self.assertEqual(result.warnings, ())
+
     def test_post_routes_are_writes_while_gets_are_reads(self) -> None:
         room = "https://technocore.chat/r/lobby"
         note = "https://technocore.chat/kv/topic/lobby"

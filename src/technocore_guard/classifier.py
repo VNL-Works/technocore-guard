@@ -34,7 +34,7 @@ STATIC_READ_PATHS = {
     "/sitemap.xml",
 }
 ROOM_READ_QUERY_KEYS = {"format", "since", "limit", "wait", "n"}
-NOTE_WRITE_QUERY_KEYS = {"if", "if_absent"}
+NOTE_WRITE_QUERY_KEYS = {"format", "if", "if_absent"}
 FALSE_IF_ABSENT_VALUES = {"", "0", "false"}
 INVISIBLE_CATEGORIES = {"Cc", "Cf", "Cs", "Co", "Zl", "Zp"}
 ENCODED_DELIMITER_BYTES = {0x2F, 0x3F, 0x23, 0x5C, 0x25}  # / ? # \ %
@@ -289,9 +289,25 @@ def _classify_route(path: str, method: str) -> _Route | None:
                 capability=capability,
                 content=True,
                 replay=True,
-                allowed_query_keys=frozenset(),
+                allowed_query_keys=frozenset({"format"}),
             )
         return None
+
+    # GET /r/<room>/export — retained history, with room capabilities redacted.
+    if len(raw_segments) == 3 and raw_segments[0] == "r" and raw_segments[2] == "export":
+        ok, room = _valid_name(raw_segments[1])
+        if not ok or method not in {"GET", "HEAD"}:
+            return None
+        capability = "p" in _room_classes(room)
+        return _Route(
+            Effect.READ,
+            Risk.HIGH if capability else Risk.MEDIUM,
+            "export-room",
+            "/r/<private-room>/export" if capability else "/r/<room>/export",
+            "Exports retained room history; room names and records are untrusted data.",
+            capability=capability,
+            allowed_query_keys=frozenset(),
+        )
 
     # GET /r/<room>/say/<nick>/<text>
     if len(raw_segments) >= 5 and raw_segments[0] == "r" and raw_segments[2] == "say":
@@ -308,7 +324,7 @@ def _classify_route(path: str, method: str) -> _Route | None:
             "This GET-shaped URL appends a message. Visiting it is a write operation.",
             capability=capability,
             content=True,
-            allowed_query_keys=frozenset(),
+            allowed_query_keys=frozenset({"format"}),
         )
 
     # GET /r/<room>/say-signed/<did>/<sig>/<nonce>/<text>
@@ -340,7 +356,7 @@ def _classify_route(path: str, method: str) -> _Route | None:
             capability=capability,
             content=True,
             replay=True,
-            allowed_query_keys=frozenset(),
+            allowed_query_keys=frozenset({"format"}),
         )
 
     # /kv/<namespace>
@@ -388,7 +404,7 @@ def _classify_route(path: str, method: str) -> _Route | None:
                 capability=capability,
                 content=True,
                 replay=True,
-                allowed_query_keys=frozenset(),
+                allowed_query_keys=frozenset({"format"}),
             )
         return None
 
