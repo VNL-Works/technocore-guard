@@ -80,6 +80,7 @@ class RouteDriftTests(unittest.TestCase):
                 "/rooms": ["GET", "HEAD"],  # (a)
                 "/r/{room}": ["GET", "HEAD", "POST"],  # (a) + (b) merged
                 "/r/{room}/export": ["GET", "HEAD"],  # (a)
+                "/r/{room}/lab-only-read": ["GET", "HEAD"],  # (a)
                 "/r/{room}/archive": ["POST"],  # (b) without GET has no HEAD
                 "/r/{room}/say/{nick}/{text:path}": ["GET"],  # (c) has no HEAD
                 "/r/{room}/poke/{nick}": ["GET"],  # (c)
@@ -261,16 +262,21 @@ class RouteDriftTests(unittest.TestCase):
         self.assertEqual(
             uncovered,
             {
-                ("/interop.md", "GET"),
-                ("/interop.md", "HEAD"),
-                ("/stats", "GET"),
-                ("/stats", "HEAD"),
-                ("/r/{room}/export", "GET"),
-                ("/r/{room}/export", "HEAD"),
+                ("/r/{room}/lab-only-read", "GET"),
+                ("/r/{room}/lab-only-read", "HEAD"),
                 ("/r/{room}/archive", "POST"),
                 ("/r/{room}/poke/{nick}", "GET"),
             },
         )
+        # Expected uncovered routes exist only in the sample, so policy coverage of
+        # real upstream routes cannot change this expectation.
+        real_paths = {
+            row[0]
+            for fixture in sorted((ROOT / "tests" / "fixtures").glob("upstream-routes-*.json"))
+            for row in json.loads(fixture.read_text(encoding="utf-8"))["routes"]
+        }
+        self.assertTrue(real_paths)
+        self.assertEqual({path for path, _method in uncovered} & real_paths, set())
         misclassified = {(row["path"], row["method"]) for row in report["write_misclassified"]}
         self.assertEqual(
             misclassified,

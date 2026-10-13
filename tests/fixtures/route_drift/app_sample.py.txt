@@ -24,18 +24,20 @@ app = Starlette(
     routes=[
         # (d) literal tuple comprehension: covered static documents.
         *[Route(path, llms_txt) for path in ("/", "/llms.txt")],
-        # (e) _DOCS comprehension: /skill.md covered, /interop.md uncovered.
+        # (e) _DOCS comprehension: /skill.md and /interop.md covered.
         *[Route(path, doc_md) for path in _DOCS],
-        # (a) covered static document.
+        # (a) covered static documents.
         Route("/healthz", healthz),
-        # (a) uncovered static document.
         Route("/stats", stats),
         Route("/rooms", rooms),
         Route("/r/{room}", room_read),
         # (b) merged with the GET entry above.
         Route("/r/{room}", room_post, methods=["POST"]),
-        # (a) uncovered parameterised read.
+        # (a) covered parameterised read.
         Route("/r/{room}/export", room_export),
+        # (a) uncovered parameterised read. It exists only in this sample, never in
+        # real upstream, so a policy that covers a real route cannot cover it.
+        Route("/r/{room}/lab-only-read", room_lab_only_read),
         # (b) POST that the guard does not call a write.
         Route("/r/{room}/archive", room_archive, methods=["POST"]),
         # (c) GET-shaped write that the guard covers.
