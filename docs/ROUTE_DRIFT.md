@@ -25,7 +25,7 @@ python scripts/route_drift.py --app-py <scratch>/app-<commit>.py --upstream-comm
   cannot check that the file really came from that commit.
 - Without `--out` the report goes to stdout.
 - `--fixture-out` also writes `{"source", "commit", "routes": [[path, [methods]], ...]}`.
-  This follows PR #1's `upstream-routes-*.json` layout but has no `version` key, and its
+  This follows the `tests/fixtures/upstream-routes-*.json` layout but has no `version` key, and its
   rows are sorted by path rather than in registration order. Only the paths you pass are written.
 - `--guard-src` classifies with another checkout's `src` directory instead of this one.
 - Exit codes: `0` no drift, `1` drift, `2` usage, read, write, extraction or sample error.
