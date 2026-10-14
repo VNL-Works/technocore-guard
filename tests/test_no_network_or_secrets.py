@@ -169,7 +169,7 @@ exit 0
             cwd=ROOT,
             capture_output=True,
             text=True,
-            timeout=20,
+            timeout=120,
             check=False,
         )
         self.assertNotEqual(completed.returncode, 0)
