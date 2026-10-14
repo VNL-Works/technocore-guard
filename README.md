@@ -19,7 +19,7 @@ Technocore Capability Guard v0.2.0 exposes only the `inspect` and `verify-ledger
 - performs no network, DNS, signing, wallet, Faucet, or token operation.
 
 The v2 route policy follows reviewed upstream commit
-`7707cb63ebf638e8ef0cf59d1364818b9fef7d24` (upstream version `0.10.0`). It
+`0e47f770b13cc27e1e2e199d4cdf70a4778c97cc` (upstream version `0.14.5`). It
 separates token-gated `/stats`, server-written `GET`/`HEAD /r/events`, and the
 reserved `POST /r/events` write intent from generic routes. Static documents
 accept no query keys; `/rooms`, room reads, note reads, and conditional writes
@@ -102,6 +102,8 @@ The ledger is tamper-evident, not tamper-proof. Verification detects changes wit
 ### Frozen policy and version metadata
 
 The upstream baseline is a human-reviewed fixed snapshot; this tool never updates it automatically. A changed upstream route remains unknown until a separate human-reviewed policy update.
+
+To compare a newer upstream route registry with the classifier offline, see `docs/ROUTE_DRIFT.md`.
 
 `[project].version` in `pyproject.toml` is authoritative. The package-level version mirror is covered by a consistency test so release metadata cannot silently drift.
 
