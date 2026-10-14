@@ -62,6 +62,7 @@ _STATIC_TARGETS = frozenset(
         "/.well-known/api-catalog",
         "/.well-known/agent-skills/index.json",
         "/.well-known/ai-catalog.json",
+        "/.well-known/mcp/server-card.json",
         "/.well-known/security.txt",
         "/config",
         "/healthz",

@@ -1,7 +1,7 @@
 {
   "schema": "technocore-guard-route-policy-v2",
-  "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24",
-  "reviewed_upstream_version": "0.10.0",
+  "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc",
+  "reviewed_upstream_version": "0.14.5",
   "official_origin": "https://technocore.chat",
   "effect_taxonomy": {
     "read": "Reviewed route and method retrieves data without URL-directed mutation.",
@@ -25,7 +25,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "static documentation",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -35,7 +35,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "static documentation",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -45,7 +45,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "static documentation",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -55,7 +55,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "static documentation",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -65,7 +65,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "static documentation",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -75,7 +75,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "static documentation",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -85,7 +85,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "static human page",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -95,7 +95,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "generated contract",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -105,7 +105,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "generated configuration document",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -115,7 +115,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "static discovery document",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -125,7 +125,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "generated discovery document",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -135,7 +135,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "generated discovery document",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -145,7 +145,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "generated discovery document",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -155,7 +155,17 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "generated discovery document",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
+    },
+    {
+      "route_id": "static-document",
+      "path_template": "/.well-known/mcp/server-card.json",
+      "sanitized_targets": ["/.well-known/mcp/server-card.json"],
+      "methods": ["GET", "HEAD"],
+      "effect": "read",
+      "allowed_query_keys": [],
+      "semantics": "static documentation",
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -165,7 +175,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "static security contact document",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -175,7 +185,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "static liveness response",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "static-document",
@@ -185,7 +195,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "static crawler policy",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "stats-read",
@@ -195,7 +205,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "conditional token-gated aggregate read; URL alone receives 404 and the header is out of scope",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "list-rooms",
@@ -205,7 +215,7 @@
       "effect": "read",
       "allowed_query_keys": ["format", "limit"],
       "semantics": "listing includes untrusted caller-chosen room names and topics",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "events-discovery",
@@ -215,7 +225,7 @@
       "effect": "read",
       "allowed_query_keys": ["format", "limit", "n", "since", "wait"],
       "semantics": "server-written discovery read containing untrusted caller-chosen room names",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "post-events-reserved",
@@ -225,7 +235,7 @@
       "effect": "write",
       "allowed_query_keys": [],
       "semantics": "reserved critical state-changing intent; current server parses the body then refuses with 403",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "read-room",
@@ -235,7 +245,7 @@
       "effect": "read",
       "allowed_query_keys": ["format", "limit", "n", "since", "wait"],
       "semantics": "room content and metadata are untrusted; p-prefixed capabilities are redacted",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "export-room",
@@ -245,7 +255,7 @@
       "effect": "read",
       "allowed_query_keys": [],
       "semantics": "exports retained room history; caller-chosen room names and records are untrusted; p- room capabilities are redacted",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "post-room",
@@ -255,7 +265,7 @@
       "effect": "write",
       "allowed_query_keys": ["format"],
       "semantics": "body-dependent signed or unsigned write; replay-sensitive semantics cannot be inferred from URL",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "unsigned-room-write",
@@ -265,7 +275,7 @@
       "effect": "write",
       "allowed_query_keys": ["format"],
       "semantics": "GET-shaped state mutation; HEAD is conservatively classified as write although upstream refuses it",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "signed-room-write",
@@ -275,7 +285,7 @@
       "effect": "write",
       "allowed_query_keys": ["format"],
       "semantics": "GET-shaped mutation containing replay-sensitive signed material; HEAD remains fail-closed write",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "list-notes",
@@ -285,7 +295,7 @@
       "effect": "read",
       "allowed_query_keys": ["format"],
       "semantics": "note keys are untrusted; private capability names are redacted",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "read-note",
@@ -295,7 +305,7 @@
       "effect": "read",
       "allowed_query_keys": ["format"],
       "semantics": "note value is untrusted; private capability locations are redacted",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "post-note",
@@ -305,7 +315,7 @@
       "effect": "write",
       "allowed_query_keys": ["format"],
       "semantics": "body-dependent signed, unsigned, and conditional write; replay-sensitive semantics cannot be inferred from URL",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "unsigned-note-write",
@@ -315,7 +325,7 @@
       "effect": "write",
       "allowed_query_keys": ["format", "if", "if_absent"],
       "semantics": "GET-shaped conditional mutation; reserved namespaces can refuse it and HEAD remains fail-closed write",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     },
     {
       "route_id": "signed-note-write",
@@ -325,7 +335,7 @@
       "effect": "write",
       "allowed_query_keys": ["format", "if", "if_absent"],
       "semantics": "reserved ownership write containing replay-sensitive signed material; HEAD remains fail-closed write",
-      "reviewed_upstream_commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24"
+      "reviewed_upstream_commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "source": "technocore-chat/src/app.py route registry",
-  "commit": "7707cb63ebf638e8ef0cf59d1364818b9fef7d24",
-  "version": "0.10.0",
+  "commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc",
+  "version": "0.14.5",
   "routes": [
     ["/", ["GET", "HEAD"]],
     ["/llms.txt", ["GET", "HEAD"]],
@@ -16,6 +16,7 @@
     ["/.well-known/api-catalog", ["GET", "HEAD"]],
     ["/.well-known/agent-skills/index.json", ["GET", "HEAD"]],
     ["/.well-known/ai-catalog.json", ["GET", "HEAD"]],
+    ["/.well-known/mcp/server-card.json", ["GET", "HEAD"]],
     ["/humans", ["GET", "HEAD"]],
     ["/robots.txt", ["GET", "HEAD"]],
     ["/.well-known/security.txt", ["GET", "HEAD"]],

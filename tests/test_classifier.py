@@ -46,6 +46,85 @@ class ClassifierTests(unittest.TestCase):
                     Effect.UNKNOWN,
                 )
 
+    def test_mcp_server_card_is_static_read_like_other_well_known_documents(self) -> None:
+        base = "https://technocore.chat"
+        card = "/.well-known/mcp/server-card.json"
+        for method in ("GET", "HEAD"):
+            with self.subTest(method=method):
+                result = self.assert_effect(base + card, Effect.READ, method=method)
+                self.assertEqual(result.route_id, "static-document")
+                self.assertEqual(result.risk, Risk.LOW)
+                self.assertEqual(result.sanitized_target, card)
+                self.assertEqual(result.origin, "https://technocore.chat")
+                self.assertFalse(result.contains_private_capability)
+                self.assertFalse(result.contains_user_content)
+                self.assertFalse(result.contains_replay_material)
+
+    def test_mcp_server_card_wrong_method_and_query_match_existing_static_documents(self) -> None:
+        # Expectations come from the reviewed /.well-known/ai-catalog.json document
+        # with the same shape, so this adds no new rule for the server card.
+        base = "https://technocore.chat"
+        card = "/.well-known/mcp/server-card.json"
+        reference = "/.well-known/ai-catalog.json"
+        cases = [(method, "") for method in ("POST", "PUT", "DELETE", "PATCH")]
+        cases += [("GET", "?x=1"), ("HEAD", "?x=1"), ("GET", "?format=json")]
+        for method, query in cases:
+            with self.subTest(method=method, query=query):
+                expected = inspect_url(base + reference + query, method)
+                self.assertNotEqual(expected.effect, Effect.READ)
+                result = self.assert_effect(base + card + query, expected.effect, method=method)
+                self.assertEqual(result.route_id, expected.route_id)
+                self.assertEqual(result.risk, expected.risk)
+                self.assertEqual(result.sanitized_target, expected.sanitized_target)
+                self.assertNotIn("server-card", json.dumps(result.to_public_dict()))
+
+    def test_mcp_server_card_adversarial_spellings_are_never_reads(self) -> None:
+        base = "https://technocore.chat"
+        shaped = {
+            "encoded-slash": (
+                "/.well-known/mcp%2Fserver-card.json",
+                "/.well-known%2Fai-catalog.json",
+            ),
+            "encoded-percent": (
+                "/.well-known/mcp/server%25card.json",
+                "/.well-known/ai%25catalog.json",
+            ),
+            "trailing-slash": (
+                "/.well-known/mcp/server-card.json/",
+                "/.well-known/ai-catalog.json/",
+            ),
+            "mixed-case": (
+                "/.Well-Known/mcp/server-card.json",
+                "/.Well-Known/ai-catalog.json",
+            ),
+        }
+        for shape, (path, reference) in shaped.items():
+            with self.subTest(shape=shape):
+                expected = inspect_url(base + reference, "GET")
+                self.assertIn(expected.effect, {Effect.BLOCKED, Effect.UNKNOWN})
+                result = self.assert_effect(base + path, expected.effect)
+                self.assertEqual(result.route_id, expected.route_id)
+                self.assertEqual(result.sanitized_target, expected.sanitized_target)
+        self.assertEqual(
+            inspect_url(base + shaped["encoded-slash"][0], "GET").effect,
+            Effect.BLOCKED,
+        )
+        self.assertEqual(
+            inspect_url(base + shaped["encoded-percent"][0], "GET").effect,
+            Effect.BLOCKED,
+        )
+        # Upstream serves only the canonical card path; these are not aliases.
+        for shape, path in (
+            ("plural-cards", "/.well-known/mcp/server-cards.json"),
+            ("mcp-json", "/.well-known/mcp.json"),
+            ("no-extension", "/.well-known/mcp/server-card"),
+        ):
+            for method in ("GET", "HEAD"):
+                with self.subTest(shape=shape, method=method):
+                    result = self.assert_effect(base + path, Effect.UNKNOWN, method=method)
+                    self.assertEqual(result.route_id, "unknown-route")
+                    self.assertEqual(result.sanitized_target, "<unknown-official-origin-route>")
+
     def test_stats_is_dedicated_token_gated_url_read(self) -> None:
         result = self.assert_effect("https://technocore.chat/stats", Effect.READ)
         self.assertEqual(result.route_id, "stats-read")

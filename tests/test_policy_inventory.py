@@ -13,7 +13,7 @@ import technocore_guard
 POLICY = json.loads((ROOT / "policy" / "routes-v2.json").read_text(encoding="utf-8"))
 BASELINE = json.loads((ROOT / "UPSTREAM_BASELINE.json").read_text(encoding="utf-8"))
 UPSTREAM = json.loads(
-    (ROOT / "tests" / "fixtures" / "upstream-routes-7707cb63.json").read_text(encoding="utf-8")
+    (ROOT / "tests" / "fixtures" / "upstream-routes-0e47f770.json").read_text(encoding="utf-8")
 )
 DID = "did:key:z6Mk" + "1" * 44
 SIG = "A" * 86
