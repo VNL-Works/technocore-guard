@@ -33,3 +33,9 @@ without network access. Conclusions:
   reviewed read carrying it is classified `unknown`, and a known write stays a write. The policy
   is unchanged.
 - `scripts/route_drift.py` reports no drift against `0e47f77`.
+- 2026-10-15: the HEAD model was checked against Starlette 1.7.0 and upstream 0e47f77's route
+  objects, outside this repository. Starlette 1.7.0's `Route` adds HEAD to any GET route, and
+  `Route.matches` compares the request method with the route's method set. The methods of the
+  `Route` objects in upstream's `app` match the `upstream_routes` of `scripts/route_drift.py`
+  for all 28 paths and 54 path/method pairs. Over raw ASGI, a HEAD to a `_get_write` route got
+  405 with `Allow: GET` and the handler did not run, and a GET to the same route ran it.

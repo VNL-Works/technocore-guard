@@ -47,7 +47,9 @@ A sample the guard returns as `blocked` exits `2` (`sample_rejected`). A sample 
 refuse comes back as effect `unknown` and is listed as `uncovered`, the safe direction.
 
 - `upstream_routes`: every registered path with its merged methods. HEAD is added wherever
-  Starlette adds it; `_get_write` routes are GET only.
+  Starlette adds it; `_get_write` routes are GET only. On 2026-10-15 this model was checked
+  against Starlette 1.7.0 and upstream 0e47f77's route objects: the 28 paths and 54 path/method
+  pairs match, and a HEAD to a `_get_write` route got 405 with `Allow: GET` without running it.
 - `classified`: the guard's `effect` and `route_id` for each path and method.
 - `uncovered`: entries whose effect is `unknown`. The guard refuses them; the policy has not
   reviewed them.
