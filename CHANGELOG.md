@@ -14,6 +14,7 @@
 - raises the PowerShell quality-gate test's subprocess timeout from 20 s to 120 s so it does not
   fail on a loaded machine.
 - records that the `route_drift.py` HEAD model was checked against Starlette 1.7.0 and upstream 0e47f77's route objects (docs only).
+- the conflicting-conditional warning now treats `if_absent` values `no`/`off` and any letter case as false, matching upstream `manifest.IF_ABSENT` at the baseline; effect and risk are unchanged.
 
 ## 0.2.0
 

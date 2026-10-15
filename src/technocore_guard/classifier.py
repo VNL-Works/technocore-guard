@@ -36,7 +36,8 @@ STATIC_READ_PATHS = {
 }
 ROOM_READ_QUERY_KEYS = {"format", "since", "limit", "wait", "n"}
 NOTE_WRITE_QUERY_KEYS = {"format", "if", "if_absent"}
-FALSE_IF_ABSENT_VALUES = {"", "0", "false"}
+# Upstream manifest.IF_ABSENT false spellings; upstream lower-cases the value before matching.
+FALSE_IF_ABSENT_VALUES = {"", "0", "false", "no", "off"}
 INVISIBLE_CATEGORIES = {"Cc", "Cf", "Cs", "Co", "Zl", "Zp"}
 ENCODED_DELIMITER_BYTES = {0x2F, 0x3F, 0x23, 0x5C, 0x25}  # / ? # \ %
 
@@ -192,7 +193,7 @@ def _query_warnings(query: str, allowed: frozenset[str]) -> tuple[str, ...] | No
     if (
         "if" in present
         and if_absent_value is not None
-        and if_absent_value not in FALSE_IF_ABSENT_VALUES
+        and if_absent_value.lower() not in FALSE_IF_ABSENT_VALUES
     ):
         warnings.append("conflicting conditional query parameters are present")
     return tuple(sorted(set(warnings)))

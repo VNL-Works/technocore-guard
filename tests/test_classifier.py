@@ -355,22 +355,31 @@ class ClassifierTests(unittest.TestCase):
 
     def test_if_absent_semantics_match_upstream_exactly(self) -> None:
         base = "https://technocore.chat/kv/topic/lobby/set/x?if=old&if_absent="
-        for value in ("1", "true", "TRUE", "yes", "no", "off", "sometimes"):
+        for value in ("1", "true", "TRUE", "yes", "on", "ON", "sometimes"):
             with self.subTest(truthy=value):
                 result = self.assert_effect(base + value, Effect.WRITE)
+                self.assertEqual(result.risk, Risk.CRITICAL)
                 self.assertIn("conflicting conditional query parameters are present", result.warnings)
-        for value in ("", "0", "false"):
+        for value in ("", "0", "false", "FALSE", "no", "No", "off", "OFF"):
             with self.subTest(false=value):
                 result = self.assert_effect(base + value, Effect.WRITE)
+                self.assertEqual(result.risk, Risk.CRITICAL)
                 self.assertNotIn("conflicting conditional query parameters are present", result.warnings)
 
     def test_duplicate_if_absent_uses_last_value_for_conflict_parity(self) -> None:
         base = "https://technocore.chat/kv/topic/lobby/set/x?if=old"
         last_false = self.assert_effect(base + "&if_absent=1&if_absent=0", Effect.WRITE)
+        self.assertEqual(last_false.risk, Risk.CRITICAL)
         self.assertIn("one or more duplicate query parameters are present", last_false.warnings)
         self.assertNotIn("conflicting conditional query parameters are present", last_false.warnings)
 
-        last_true = self.assert_effect(base + "&if_absent=0&if_absent=FALSE", Effect.WRITE)
+        last_false_cased = self.assert_effect(base + "&if_absent=on&if_absent=OFF", Effect.WRITE)
+        self.assertEqual(last_false_cased.risk, Risk.CRITICAL)
+        self.assertIn("one or more duplicate query parameters are present", last_false_cased.warnings)
+        self.assertNotIn("conflicting conditional query parameters are present", last_false_cased.warnings)
+
+        last_true = self.assert_effect(base + "&if_absent=0&if_absent=on", Effect.WRITE)
+        self.assertEqual(last_true.risk, Risk.CRITICAL)
         self.assertIn("one or more duplicate query parameters are present", last_true.warnings)
         self.assertIn("conflicting conditional query parameters are present", last_true.warnings)
 
