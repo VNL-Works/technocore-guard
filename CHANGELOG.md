@@ -4,7 +4,9 @@
 
 - moves the reviewed upstream baseline from `7707cb63ebf638e8ef0cf59d1364818b9fef7d24`
   (0.10.0) to `0e47f770b13cc27e1e2e199d4cdf70a4778c97cc` (0.14.5) after a review of every
-  existing policy route; the offline route inventory fixture now pins that commit;
+  existing policy route; the offline route inventory fixture now pins that commit; the review
+  was AI-assisted and was signed off by the repository owner on 2026-10-15, recorded in
+  `docs/baseline-reviews/0e47f77.md` and `UPSTREAM_BASELINE.json` `human_review`;
 - classifies `GET`/`HEAD /.well-known/mcp/server-card.json`, the one route upstream added in
   that range, as a static-document read that accepts no query keys;
 - adds `scripts/route_drift.py`, a developer script that compares a saved upstream `src/app.py`

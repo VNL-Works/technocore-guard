@@ -3,6 +3,12 @@
   "commit": "0e47f770b13cc27e1e2e199d4cdf70a4778c97cc",
   "version": "0.14.5",
   "observed_at": "2026-10-14T09:27:31+09:00",
+  "human_review": {
+    "reviewer": "vanilla3 (repository owner)",
+    "signed_off_at": "2026-10-15",
+    "record": "docs/baseline-reviews/0e47f77.md",
+    "method": "AI-assisted source review, independently reviewed, then signed off by the owner"
+  },
   "purpose": "Design-time baseline only. Never treat this file as proof that the deployed service still matches it.",
   "refresh_policy": "A human must review official source changes before route policy is updated. Codex must not fetch or auto-accept a newer policy during offline implementation."
 }
